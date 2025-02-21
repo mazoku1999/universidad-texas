@@ -108,8 +108,10 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-tl from-[#06112a] via-[#04315f] to-[#012954] overflow-hidden">
-
-
+      {/* Background Pattern */}
+      <div className="fixed inset-0">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=1600')] opacity-[0.2] bg-cover bg-center mix-blend-overlay" />
+      </div>
 
       <div className="relative flex flex-col min-h-screen">
         {/* Header */}
