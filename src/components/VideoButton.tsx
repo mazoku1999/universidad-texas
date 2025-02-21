@@ -57,17 +57,16 @@ const VideoButton = ({ video, onClick, isActive }: VideoButtonProps) => {
             <div className="absolute inset-0 bg-gradient-to-r from-sky-500/0 to-violet-500/0 group-hover:from-sky-500/5 group-hover:to-violet-500/5 transition-opacity duration-300" />
 
             <div className="relative z-10 flex gap-4">
-                <div className="flex-shrink-0 p-2.5 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors duration-300">
+                <div className="flex-shrink-0 p-2.5 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors duration-300 w-10 h-10">
                     {getIconForQuestion(video.id)}
                 </div>
 
                 <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
-                    <h3 className="text-[15px] leading-normal font-medium text-white text-left pr-2">
+                    <h3 className="text-[15px] leading-normal font-medium text-white text-left pr-2 overflow-hidden">
                         {video.question}
                     </h3>
                     <div className="flex-shrink-0">
-                        <ChevronRight className={`w-5 h-5 ${isActive ? 'text-sky-400' : 'text-slate-400'
-                            } transition-colors duration-300`} />
+                        <ChevronRight className={`w-5 h-5 ${isActive ? 'text-sky-400' : 'text-slate-400'} transition-colors duration-300`} />
                     </div>
                 </div>
             </div>
