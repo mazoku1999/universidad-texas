@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import VideoButton from '@/components/VideoButton';
 import VideoPlayer from '@/components/VideoPlayer';
 import { VideoProvider, useVideo } from '@/components/VideoContext';
@@ -86,12 +86,20 @@ const videos: VideoData[] = [
     question: "Does the Texas A&M offer student exchange and study abroad programs?",
     answer: "The university offers various student exchange and study abroad opportunities, allowing students to gain international experience and broaden their academic and cultural horizons.",
     videoUrl: "https://res.cloudinary.com/djfiaa34u/video/upload/v1740149809/j_uhkeul.mp4"
+  },
+  {
+    id: 0,
+    question: "About Texas A&M University",
+    answer: "Learn more about Texas A&M University and its exceptional academic programs, rich traditions, and vibrant campus life.",
+    videoUrl: "https://res.cloudinary.com/djfiaa34u/video/upload/v1741890971/movie_1741823671032_jbnlhu.mp4"
   }
 ];
 
 function HomeContent() {
   const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null);
-  const { setVideo } = useVideo();
+  const { setVideo, resetVideo } = useVideo();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleQuestionClick = (video: VideoData) => {
     console.log('🎥 Question clicked:', video.id);
@@ -104,7 +112,39 @@ function HomeContent() {
     setVideo(video.videoUrl);
   };
 
-  const midIndex = Math.ceil(videos.length / 2);
+  const openAboutModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+  };
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener('keydown', handleEsc);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [isModalOpen]);
+
+  // Find the About video
+  const aboutVideo = videos.find(video => video.id === 0);
+
+  // Filter the regular videos (all except the About video)
+  const regularVideos = videos.filter(video => video.id !== 0);
+  const midIndex = Math.ceil(regularVideos.length / 2);
 
   return (
     <div className="min-h-screen bg-gradient-to-tl from-[#06112a] via-[#04315f] to-[#012954] overflow-hidden">
@@ -138,7 +178,7 @@ function HomeContent() {
           <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto">
             {/* Questions List Left */}
             <div className="order-1 lg:w-1/3 grid grid-cols-1 gap-4 relative z-10">
-              {videos.slice(0, midIndex).map((video) => (
+              {regularVideos.slice(0, midIndex).map((video) => (
                 <VideoButton
                   key={video.id}
                   video={video}
@@ -149,17 +189,70 @@ function HomeContent() {
             </div>
 
             {/* Video Section */}
-            <div className="order-2 lg:w-1/3 relative z-10">
+            <div className="order-2 lg:w-1/3 relative z-10 flex flex-col gap-6">
+              {/* About Button */}
+              {aboutVideo && (
+                <div className="w-full max-w-sm mx-auto lg:max-w-md mb-4">
+                  <button
+                    onClick={openAboutModal}
+                    className="w-full group relative py-3 px-4 bg-gradient-to-r from-sky-600/40 to-indigo-600/40 hover:from-sky-600/60 hover:to-indigo-600/60 border border-sky-400/30 hover:border-sky-400/70 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] backdrop-blur-md rounded-lg transition-all duration-300 active:scale-[0.98] touch-manipulation flex items-center justify-center gap-3"
+                  >
+                    <div className="flex-shrink-0 p-2 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors duration-300">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-5 h-5 text-white"
+                      >
+                        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                        <path d="M12 8v4" />
+                        <path d="M12 16h.01" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium text-white">About Texas A&M University</span>
+                  </button>
+                </div>
+              )}
+
               <div className="w-full max-w-sm mx-auto lg:max-w-md">
-                <div className="rounded-xl overflow-hidden bg-black/40 border border-slate-700/50 shadow-[0_0_25px_rgba(56,189,248,0.15)]">
+                <div className="rounded-xl overflow-hidden bg-black/40 border border-slate-700/50 shadow-[0_0_25px_rgba(56,189,248,0.15)] relative">
                   <VideoPlayer />
+
+                  {/* Stop Button (FAB) */}
+                  {selectedVideo && (
+                    <button
+                      onClick={() => {
+                        setSelectedVideo(null);
+                        resetVideo();
+                      }}
+                      className="absolute bottom-4 right-4 z-10 group p-2.5 rounded-full bg-slate-800/70 hover:bg-sky-800/70 border border-sky-400/30 hover:border-sky-400/60 shadow-lg hover:shadow-[0_0_10px_rgba(56,189,248,0.2)] transition-all duration-300"
+                      title="Stop video"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-5 h-5 text-white group-hover:text-sky-300 transition-colors"
+                      >
+                        <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Questions List Right */}
             <div className="order-3 lg:w-1/3 grid grid-cols-1 gap-4 relative z-10">
-              {videos.slice(midIndex).map((video) => (
+              {regularVideos.slice(midIndex).map((video) => (
                 <VideoButton
                   key={video.id}
                   video={video}
@@ -170,6 +263,46 @@ function HomeContent() {
             </div>
           </div>
         </main>
+
+        {/* About Modal */}
+        {isModalOpen && aboutVideo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="relative bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl shadow-2xl border border-sky-500/20 w-full max-w-3xl overflow-hidden">
+              {/* Close button */}
+              <button
+                onClick={closeModal}
+                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+
+              {/* Modal Header */}
+              <div className="p-6 border-b border-slate-700/50">
+                <h3 className="text-xl font-medium text-white">{aboutVideo.question}</h3>
+              </div>
+
+              {/* Modal Body with Video */}
+              <div className="p-6">
+                <div className="aspect-[4/3] overflow-hidden rounded-lg bg-black mx-auto max-w-md">
+                  <video
+                    ref={videoRef}
+                    src={aboutVideo.videoUrl}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div className="mt-4 text-slate-300">
+                  <p>{aboutVideo.answer}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
